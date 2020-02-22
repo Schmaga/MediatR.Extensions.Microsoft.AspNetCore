@@ -15,7 +15,7 @@
         public void Ensure_that_the_decorator_replaces_default_mediator_implementation_after_registration()
         {
             var services = new ServiceCollection();
-            services.AddControllers().AddAndConfigureMediatRToUseRequestAbortedCancellationToken(typeof(FakeRequest).Assembly);
+            services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(typeof(FakeRequest).Assembly);
             var provider = services.BuildServiceProvider();
 
             var mediator = provider.GetService<IMediator>();
@@ -27,7 +27,7 @@
         public void Ensure_that_the_decorator_will_have_the_provided_mediator_implementation_injected()
         {
             var services = new ServiceCollection();
-            services.AddControllers().AddAndConfigureMediatRToUseRequestAbortedCancellationToken(
+            services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(
                 config => { config.Using<MyFakeMediator>().AsSingleton(); },
                 typeof(FakeRequest).Assembly);
             var provider = services.BuildServiceProvider();
@@ -44,7 +44,7 @@
         public void Test_type_handler_service_registration_extension_method()
         {
             var services = new ServiceCollection();
-            services.AddControllers().AddAndConfigureMediatRToUseRequestAbortedCancellationToken(typeof(FakeRequest));
+            services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(typeof(FakeRequest));
             var provider = services.BuildServiceProvider();
 
             var mediator = provider.GetService<IMediator>();
@@ -56,7 +56,7 @@
         public void Test_type_handler_service_registration_extension_method_with_configuration()
         {
             var services = new ServiceCollection();
-            services.AddControllers().AddAndConfigureMediatRToUseRequestAbortedCancellationToken(config => { }, typeof(FakeRequest));
+            services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(config => { }, typeof(FakeRequest));
             var provider = services.BuildServiceProvider();
 
             var mediator = provider.GetService<IMediator>();

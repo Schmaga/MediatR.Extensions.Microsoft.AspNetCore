@@ -25,6 +25,7 @@
             _mediator = mediator;
         }
 
+#pragma warning disable 1591 // Disable xml comment warnings because documentation should be based on IMediator interface summaries
         public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = new CancellationToken())
         {
             var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
@@ -48,6 +49,7 @@
             var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
             await _mediator.Publish(notification, cancellationTokenToUse);
         }
+#pragma warning restore 1591
 
         private CancellationToken GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(CancellationToken cancellationToken)
         {
