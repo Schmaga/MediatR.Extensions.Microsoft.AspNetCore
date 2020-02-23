@@ -1,5 +1,10 @@
 # MediatR.Extensions.Microsoft.AspNetCore
-Some useful extensions to make integration of MediatR into ASP.NET Core Application easier. It currently only adds one new feature
+
+[![NuGet](https://img.shields.io/nuget/v/MediatR.Extensions.Microsoft.AspNetCore)](https://www.nuget.org/packages/MediatR.Extensions.Microsoft.AspNetCore/)
+
+# Project summary
+
+Some useful extensions to make the integration of MediatR into ASP.NET Core Application easier. It currently only adds one new feature
  to the integration of MediatR into ASP.NET Core: Automatic wire-up of the HttpContext.RequestAborted CancellationToken into
 the the handlers. I might add a few more features in the future as well, as I already have some ideas. 
 
