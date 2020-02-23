@@ -7,7 +7,7 @@
     <DelaySign>false</DelaySign>
     <Authors>Sebastian Kleinschmager</Authors>
     <Company />
-    <Description>Some useful extensions to make integration of MediatR into an ASP.NET Core Application easier</Description>
+    <Description>Some useful extensions to make integration of MediatR into an ASP.NET Core Application easier. Currently the only feature is automatically passing the HttpContext.RequestAborted CancellationToken to handlers</Description>
     <PackageProjectUrl>https://github.com/Schmaga/MediatR.Extensions.Microsoft.AspNetCore</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Schmaga/MediatR.Extensions.Microsoft.AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -15,8 +15,12 @@
     <PackageLicenseExpression></PackageLicenseExpression>
     <Copyright>Copyright Sebastian Kleinschmager</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Version>1.0.0-beta01</Version>
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <Version>1.0.0</Version>
+    
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -29,6 +33,10 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="[8.0.0, 9.0.0)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
 
   <ItemGroup>
