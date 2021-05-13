@@ -1,4 +1,7 @@
-﻿namespace MediatR.Extensions.Microsoft.AspNetCore.Mediator
+﻿using System;
+using System.Diagnostics;
+
+namespace MediatR.Extensions.Microsoft.AspNetCore.Mediator
 {
     using System.Threading;
     using System.Threading.Tasks;
@@ -26,34 +29,38 @@
         }
 
 #pragma warning disable 1591 // Disable xml comment warnings because documentation should be based on IMediator interface summaries
-        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
+            var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
             return await _mediator.Send(request, cancellationTokenToUse);
         }
 
-        public async Task<object> Send(object request, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
+            var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
             return await _mediator.Send(request, cancellationTokenToUse);
         }
 
-        public async Task Publish(object notification, CancellationToken cancellationToken = new CancellationToken())
+        public async Task Publish(object notification, CancellationToken cancellationToken = default)
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
+            var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
             await _mediator.Publish(notification, cancellationTokenToUse);
         }
 
-        public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = new CancellationToken()) where TNotification : INotification
+        public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
+            var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
             await _mediator.Publish(notification, cancellationTokenToUse);
         }
 #pragma warning restore 1591
 
-        private CancellationToken GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(CancellationToken cancellationToken)
+        private CancellationToken DecideCancellationTokenUsage(CancellationToken cancellationToken)
         {
-            return _httpContextAccessor?.HttpContext?.RequestAborted ?? cancellationToken;
+            if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
+                return CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted).Token;
+            if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+                return _httpContextAccessor.HttpContext.RequestAborted;
+            return cancellationToken;
         }
     }
 }
