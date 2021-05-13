@@ -32,25 +32,25 @@ namespace MediatR.Extensions.Microsoft.AspNetCore.Mediator
         public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
             var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
-            return await _mediator.Send(request, cancellationTokenToUse);
+            return await _mediator.Send(request, cancellationTokenToUse).ConfigureAwait(false);
         }
 
         public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
         {
             var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
-            return await _mediator.Send(request, cancellationTokenToUse);
+            return await _mediator.Send(request, cancellationTokenToUse).ConfigureAwait(false);
         }
 
         public async Task Publish(object notification, CancellationToken cancellationToken = default)
         {
             var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
-            await _mediator.Publish(notification, cancellationTokenToUse);
+            await _mediator.Publish(notification, cancellationTokenToUse).ConfigureAwait(false);
         }
 
         public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
         {
             var cancellationTokenToUse = DecideCancellationTokenUsage(cancellationToken);
-            await _mediator.Publish(notification, cancellationTokenToUse);
+            await _mediator.Publish(notification, cancellationTokenToUse).ConfigureAwait(false);
         }
 #pragma warning restore 1591
 
