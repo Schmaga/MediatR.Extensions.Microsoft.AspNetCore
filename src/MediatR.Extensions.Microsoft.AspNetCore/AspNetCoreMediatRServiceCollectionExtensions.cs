@@ -6,7 +6,7 @@
     using System.Reflection;
     using global::Microsoft.AspNetCore.Http;
     using global::Microsoft.Extensions.DependencyInjection;
-    using MediatR.Extensions.Microsoft.AspNetCore.Mediator;
+    using Mediator;
 
     /// <summary>
     /// Entry point for registration extension methods that work on top of IMvcBuilder
@@ -29,7 +29,7 @@
         /// <param name="configuration">The action used to optionally configure the MediatR options</param>
         /// <param name="assemblies">Assemblies to scan for requests and handlers</param>
         /// <returns></returns>
-        public static IMvcBuilder AddMediatRUsingRequestAbortedCancellationToken(this IMvcBuilder mvcBuilder, Action<MediatRServiceConfiguration> configuration, params Assembly[] assemblies)
+        public static IMvcBuilder AddMediatRUsingRequestAbortedCancellationToken(this IMvcBuilder mvcBuilder, Action<MediatRServiceConfiguration>? configuration, params Assembly[] assemblies)
         {
             var serviceConfig = new MediatRServiceConfiguration();
             configuration?.Invoke(serviceConfig);
@@ -67,16 +67,21 @@
         /// <param name="configuration">The action used to optionally configure the MediatR options</param>
         /// <returns></returns>
         public static IMvcBuilder AddMediatRUsingRequestAbortedCancellationToken(
-            this IMvcBuilder mvcBuilder, IEnumerable<Type> handlerAssemblyMarkerTypes, Action<MediatRServiceConfiguration> configuration)
+            this IMvcBuilder mvcBuilder, IEnumerable<Type> handlerAssemblyMarkerTypes, Action<MediatRServiceConfiguration>? configuration)
             => mvcBuilder.AddMediatRUsingRequestAbortedCancellationToken(configuration, handlerAssemblyMarkerTypes.Select(t => t.GetTypeInfo().Assembly).ToArray());
 
         private static void ConfigureMediatorDecorator(IServiceCollection services, MediatRServiceConfiguration serviceConfiguration)
         {
             services.Add(new ServiceDescriptor(serviceConfiguration.MediatorImplementationType, serviceConfiguration.MediatorImplementationType, serviceConfiguration.Lifetime));
             services.AddScoped<IMediator, RequestAbortedCancellationTokenMediatorDecorator>(
-                provider => new RequestAbortedCancellationTokenMediatorDecorator(
-                    (IMediator) provider.GetService(serviceConfiguration.MediatorImplementationType),
-                    provider.GetService<IHttpContextAccessor>()));
+                provider =>
+                {
+                    var mediator = (IMediator?) provider.GetService(serviceConfiguration.MediatorImplementationType)
+                        ?? throw new InvalidOperationException($"Could not resolve Mediator implementation {serviceConfiguration.MediatorImplementationType} from service provider");
+                    var httpContextAccessor = provider.GetService<IHttpContextAccessor>()
+                        ?? throw new InvalidOperationException("Could not resolve HttpContextAccessor from service provider.");
+                    return new RequestAbortedCancellationTokenMediatorDecorator(mediator, httpContextAccessor);
+                });
         }
     }
 }

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>MediatR.Extensions.Microsoft.AspNetCore.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
