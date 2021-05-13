@@ -57,7 +57,11 @@ namespace MediatR.Extensions.Microsoft.AspNetCore.Mediator
         private CancellationToken DecideCancellationTokenUsage(CancellationToken cancellationToken)
         {
             if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
-                return CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted).Token;
+            {
+                using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
+                return cancellationTokenSource.Token;
+            }
+
             if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
                 return _httpContextAccessor.HttpContext.RequestAborted;
             return cancellationToken;
