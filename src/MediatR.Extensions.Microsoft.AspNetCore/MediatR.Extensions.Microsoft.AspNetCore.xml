@@ -54,7 +54,8 @@
         </member>
         <member name="T:MediatR.Extensions.Microsoft.AspNetCore.Mediator.RequestAbortedCancellationTokenMediatorDecorator">
             <summary>
-            Mediator Decorator implementation that wraps around the regular registered mediator and passes the HttpContext.RequestAborted CancellationToken to the request handlers, if it is available
+            Mediator Decorator implementation that wraps around the regular registered mediator and passes the HttpContext.RequestAborted CancellationToken to the request handlers, if it is available.
+            If an explicit token is passed to the Send or Publish methods, it will create a combined token source using both HttpContext.RequestAborted and the passed token
             </summary>
         </member>
         <member name="M:MediatR.Extensions.Microsoft.AspNetCore.Mediator.RequestAbortedCancellationTokenMediatorDecorator.#ctor(MediatR.IMediator,Microsoft.AspNetCore.Http.IHttpContextAccessor)">
