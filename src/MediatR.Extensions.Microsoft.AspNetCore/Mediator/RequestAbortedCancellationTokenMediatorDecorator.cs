@@ -1,11 +1,13 @@
 ﻿namespace MediatR.Extensions.Microsoft.AspNetCore.Mediator
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using global::Microsoft.AspNetCore.Http;
 
     /// <summary>
-    /// Mediator Decorator implementation that wraps around the regular registered mediator and passes the HttpContext.RequestAborted CancellationToken to the request handlers, if it is available
+    /// Mediator Decorator implementation that wraps around the regular registered mediator and passes the HttpContext.RequestAborted CancellationToken to the request handlers, if it is available.
+    /// If an explicit token is passed to the Send or Publish methods, it will create a combined token source using both HttpContext.RequestAborted and the passed token
     /// </summary>
     public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
     {
@@ -26,34 +28,68 @@
         }
 
 #pragma warning disable 1591 // Disable xml comment warnings because documentation should be based on IMediator interface summaries
-        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
-            return await _mediator.Send(request, cancellationTokenToUse);
+            return await PossiblyWrapSendCallWithLinkedCancellationToken(
+                async token => await _mediator.Send(request, token).ConfigureAwait(false),
+                cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task<object> Send(object request, CancellationToken cancellationToken = new CancellationToken())
+        public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
-            return await _mediator.Send(request, cancellationTokenToUse);
+            return await PossiblyWrapSendCallWithLinkedCancellationToken(
+                    async token => await _mediator.Send(request, token).ConfigureAwait(false),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task Publish(object notification, CancellationToken cancellationToken = new CancellationToken())
+        public async Task Publish(object notification, CancellationToken cancellationToken = default)
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
-            await _mediator.Publish(notification, cancellationTokenToUse);
+            await PossiblyWrapPublishCallWithNewCancellationToken(
+                    async token => await _mediator.Publish(notification, token).ConfigureAwait(false),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = new CancellationToken()) where TNotification : INotification
+        public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
         {
-            var cancellationTokenToUse = GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(cancellationToken);
-            await _mediator.Publish(notification, cancellationTokenToUse);
+            await PossiblyWrapPublishCallWithNewCancellationToken(
+                    async token => await _mediator.Publish(notification, token).ConfigureAwait(false),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
+
 #pragma warning restore 1591
 
-        private CancellationToken GetRequestAbortedCancellationTokenOrUseTokenPassedFromInitialCall(CancellationToken cancellationToken)
+        private async Task<TResponse> PossiblyWrapSendCallWithLinkedCancellationToken<TResponse>(Func<CancellationToken, Task<TResponse>> wrappedSend, CancellationToken cancellationToken)
         {
-            return _httpContextAccessor?.HttpContext?.RequestAborted ?? cancellationToken;
+            if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
+            {
+                using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
+                var token = cancellationTokenSource.Token;
+                return await wrappedSend(token).ConfigureAwait(false);
+            }
+
+            if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+                return await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
+
+            return await wrappedSend(cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task PossiblyWrapPublishCallWithNewCancellationToken(Func<CancellationToken, Task> wrappedPublish, CancellationToken cancellationToken)
+        {
+            if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
+            {
+                using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
+                var token = cancellationTokenSource.Token;
+                await wrappedPublish(token).ConfigureAwait(false);
+            }
+
+            if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+                await wrappedPublish(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
+
+            await wrappedPublish(cancellationToken).ConfigureAwait(false);
         }
     }
 }
