@@ -36,7 +36,7 @@
 
             await _subject.Send(fakeRequest);
 
-            await _mediator.Received().Send(fakeRequest, _httpContextStub.RequestAborted);
+            await _mediator.Received(1).Send(fakeRequest, _httpContextStub.RequestAborted);
         }
 
         [Test]
@@ -50,7 +50,7 @@
 
             await _subject.Send(fakeRequest, cancellationToken);
 
-            await _mediator.Received().Send(fakeRequest, Arg.Do<CancellationToken>(t =>
+            await _mediator.Received(1).Send(fakeRequest, Arg.Do<CancellationToken>(t =>
             {
                 t.IsCancellationRequested.Should().BeFalse();
                 if (cancellationSource == "cancelByRequestAbortedToken")
@@ -70,7 +70,7 @@
 
             await _subject.Send(fakeRequest, cancellationToken);
 
-            await _mediator.Received().Send(fakeRequest, cancellationToken);
+            await _mediator.Received(1).Send(fakeRequest, cancellationToken);
         }
 
         [Test]
@@ -80,7 +80,7 @@
 
             await _subject.Send(fakeRequest);
 
-            await _mediator.Received().Send(fakeRequest, _httpContextStub.RequestAborted);
+            await _mediator.Received(1).Send(fakeRequest, _httpContextStub.RequestAborted);
         }
 
         [Test]
@@ -94,7 +94,7 @@
 
             await _subject.Send(fakeRequest, cancellationToken);
 
-            await _mediator.Received().Send(fakeRequest, Arg.Do<CancellationToken>(t =>
+            await _mediator.Received(1).Send(fakeRequest, Arg.Do<CancellationToken>(t =>
             {
                 t.IsCancellationRequested.Should().BeFalse();
                 if (cancellationSource == "cancelByRequestAbortedToken")
@@ -114,7 +114,7 @@
 
             await _subject.Send(fakeRequest, cancellationToken);
 
-            await _mediator.Received().Send(fakeRequest, cancellationToken);
+            await _mediator.Received(1).Send(fakeRequest, cancellationToken);
         }
 
         [Test]
@@ -124,7 +124,7 @@
 
             await _subject.Publish(fakeNotification);
 
-            await _mediator.Received().Publish(fakeNotification, _httpContextStub.RequestAborted);
+            await _mediator.Received(1).Publish(fakeNotification, _httpContextStub.RequestAborted);
         }
 
         [Test]
@@ -138,7 +138,7 @@
 
             await _subject.Publish(fakeNotification, cancellationToken);
 
-            await _mediator.Received().Publish(fakeNotification, Arg.Do<CancellationToken>(t =>
+            await _mediator.Received(1).Publish(fakeNotification, Arg.Do<CancellationToken>(t =>
             {
                 t.IsCancellationRequested.Should().BeFalse();
                 if (cancellationSource == "cancelByRequestAbortedToken")
@@ -158,7 +158,7 @@
 
             await _subject.Publish(fakeNotification, cancellationToken);
 
-            await _mediator.Received().Publish(fakeNotification, cancellationToken);
+            await _mediator.Received(1).Publish(fakeNotification, cancellationToken);
         }
 
         [Test]
@@ -168,7 +168,7 @@
 
             await _subject.Publish(fakeNotification);
 
-            await _mediator.Received().Publish(fakeNotification, _httpContextStub.RequestAborted);
+            await _mediator.Received(1).Publish(fakeNotification, _httpContextStub.RequestAborted);
         }
 
         [Test]
@@ -182,7 +182,7 @@
 
             await _subject.Publish(fakeNotification, cancellationToken);
 
-            await _mediator.Received().Publish(fakeNotification, Arg.Do<CancellationToken>(t =>
+            await _mediator.Received(1).Publish(fakeNotification, Arg.Do<CancellationToken>(t =>
             {
                 t.IsCancellationRequested.Should().BeFalse();
                 if (cancellationSource == "cancelByRequestAbortedToken")
@@ -202,7 +202,7 @@
 
             await _subject.Publish(fakeNotification, cancellationToken);
 
-            await _mediator.Received().Publish(fakeNotification, cancellationToken);
+            await _mediator.Received(1).Publish(fakeNotification, cancellationToken);
         }
     }
 }

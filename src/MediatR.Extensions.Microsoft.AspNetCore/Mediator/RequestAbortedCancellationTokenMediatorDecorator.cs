@@ -69,12 +69,11 @@
                 using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
                 var token = cancellationTokenSource.Token;
                 return await wrappedSend(token).ConfigureAwait(false);
-            }
-
-            if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+            } 
+            else if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
                 return await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
-
-            return await wrappedSend(cancellationToken).ConfigureAwait(false);
+            else 
+                return await wrappedSend(cancellationToken).ConfigureAwait(false);
         }
 
         private async Task PossiblyWrapPublishCallWithNewCancellationToken(Func<CancellationToken, Task> wrappedPublish, CancellationToken cancellationToken)
@@ -85,11 +84,10 @@
                 var token = cancellationTokenSource.Token;
                 await wrappedPublish(token).ConfigureAwait(false);
             }
-
-            if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+            else if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
                 await wrappedPublish(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
-
-            await wrappedPublish(cancellationToken).ConfigureAwait(false);
+            else 
+                await wrappedPublish(cancellationToken).ConfigureAwait(false);
         }
     }
 }
