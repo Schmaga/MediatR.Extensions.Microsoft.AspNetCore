@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>MediatR.Extensions.Microsoft.AspNetCore.snk</AssemblyOriginatorKeyFile>
@@ -16,7 +17,7 @@
     <PackageLicenseExpression></PackageLicenseExpression>
     <Copyright>Copyright Sebastian Kleinschmager</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Version>3.0.1</Version>
+    <Version>4.0.0</Version>
     
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -40,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
