@@ -1,4 +1,4 @@
-﻿
+﻿using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 
 namespace MediatR.Extensions.Microsoft.AspNetCore.Mediator;
@@ -36,9 +36,24 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
     public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
         return await PossiblyWrapSendCallWithLinkedCancellationToken(
-                async token => await _mediator.Send(request, token).ConfigureAwait(false),
-                cancellationToken)
+            async token => await _mediator.Send(request, token).ConfigureAwait(false),
+            cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
+    {
+        return PossiblyWrapCreateStreamCallWithNewCancellationToken(
+            token => _mediator.CreateStream(request, token),
+            cancellationToken);
+    }
+
+    public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default)
+    {
+        return PossiblyWrapCreateStreamCallWithNewCancellationToken(
+            token => _mediator.CreateStream(request, token),
+            cancellationToken);
     }
 
     public async Task Publish(object notification, CancellationToken cancellationToken = default)
@@ -71,6 +86,35 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             return await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
         else
             return await wrappedSend(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async IAsyncEnumerable<TResponse> PossiblyWrapCreateStreamCallWithNewCancellationToken<TResponse>(
+        Func<CancellationToken, IAsyncEnumerable<TResponse>> wrappedCreateStream, 
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
+        {
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
+            var token = cancellationTokenSource.Token;
+            await foreach (var value in wrappedCreateStream(token).ConfigureAwait(false))
+            {
+                yield return value;
+            }
+        }
+        else if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+        {
+            await foreach (var value in wrappedCreateStream(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false))
+            {
+                yield return value;
+            }
+        }
+        else
+        {
+            await foreach (var value in wrappedCreateStream(cancellationToken).ConfigureAwait(false))
+            {
+                yield return value;
+            }
+        }
     }
 
     private async Task PossiblyWrapPublishCallWithNewCancellationToken(Func<CancellationToken, Task> wrappedPublish, CancellationToken cancellationToken)

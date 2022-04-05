@@ -6,6 +6,7 @@ using MediatR.Extensions.Microsoft.AspNetCore.Mediator;
 using NUnit.Framework;
 
 namespace MediatR.Extensions.Microsoft.AspNetCore.Tests;
+
 [TestFixture]
 public class ServiceRegistrationTests
 {
@@ -71,7 +72,7 @@ public class ServiceRegistrationTests
 [ExcludeFromCodeCoverage]
 public class MyFakeMediator : IMediator
 {
-    public object ReceivedRequest { get; private set; }
+    public object? ReceivedRequest { get; private set; }
 
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
@@ -79,19 +80,30 @@ public class MyFakeMediator : IMediator
         return Task.FromResult((TResponse)new object());
     }
 
-    public Task<object> Send(object request, CancellationToken cancellationToken = default)
+    public Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
+    }
+
+    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 
     public Task Publish(object notification, CancellationToken cancellationToken = default)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 }
 
