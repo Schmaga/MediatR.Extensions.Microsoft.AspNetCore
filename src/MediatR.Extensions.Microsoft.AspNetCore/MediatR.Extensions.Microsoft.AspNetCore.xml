@@ -9,46 +9,11 @@
             Entry point for registration extension methods that work on top of IMvcBuilder
             </summary>
         </member>
-        <member name="M:MediatR.Extensions.Microsoft.AspNetCore.AspNetCoreMediatRServiceCollectionExtensions.AddMediatRUsingRequestAbortedCancellationToken(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Reflection.Assembly[])">
+        <member name="M:MediatR.Extensions.Microsoft.AspNetCore.AspNetCoreMediatRServiceCollectionExtensions.AddMediatRUsingRequestAbortedCancellationToken(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Action{Microsoft.Extensions.DependencyInjection.MediatRServiceConfiguration})">
             <summary>
-            Registers MediatR which is configured to use the HttpContext.RequestAborted CancellationToken in ASP.NET Core Environments, and scans the provided assemblies for handlers and requests
+            Registers MediatR which is configured to use the HttpContext.RequestAborted CancellationToken in ASP.NET Core Environments, using the given configuration
             </summary>
             <param name="mvcBuilder">Mvc Builder</param>
-            <param name="assemblies">Assemblies to scan for requests and handlers</param>
-            <returns></returns>
-        </member>
-        <member name="M:MediatR.Extensions.Microsoft.AspNetCore.AspNetCoreMediatRServiceCollectionExtensions.AddMediatRUsingRequestAbortedCancellationToken(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Action{MediatR.MediatRServiceConfiguration},System.Reflection.Assembly[])">
-            <summary>
-            Registers MediatR which is configured to use the HttpContext.RequestAborted CancellationToken in ASP.NET Core Environments, and scans the provided assemblies for handlers and requests
-            </summary>
-            <param name="mvcBuilder">Mvc Builder</param>
-            <param name="configuration">The action used to optionally configure the MediatR options</param>
-            <param name="assemblies">Assemblies to scan for requests and handlers</param>
-            <returns></returns>
-        </member>
-        <member name="M:MediatR.Extensions.Microsoft.AspNetCore.AspNetCoreMediatRServiceCollectionExtensions.AddMediatRUsingRequestAbortedCancellationToken(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Type[])">
-            <summary>
-            Registers MediatR which is configured to use the HttpContext.RequestAborted CancellationToken in ASP.NET Core Environments, and scans the assemblies of the provided types for handlers and requests
-            </summary>
-            <param name="mvcBuilder">Mvc Builder</param>
-            <param name="handlerAssemblyMarkerTypes">Assembly handler marker types</param>
-            <returns></returns>
-        </member>
-        <member name="M:MediatR.Extensions.Microsoft.AspNetCore.AspNetCoreMediatRServiceCollectionExtensions.AddMediatRUsingRequestAbortedCancellationToken(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Action{MediatR.MediatRServiceConfiguration},System.Type[])">
-            <summary>
-            Registers MediatR which is configured to use the HttpContext.RequestAborted CancellationToken in ASP.NET Core Environments, and scans the assemblies of the provided types for handlers and requests
-            </summary>
-            <param name="mvcBuilder">Mvc Builder</param>
-            <param name="configuration">The action used to optionally configure the MediatR options</param>
-            <param name="handlerAssemblyMarkerTypes">Assembly handler marker types</param>
-            <returns></returns>
-        </member>
-        <member name="M:MediatR.Extensions.Microsoft.AspNetCore.AspNetCoreMediatRServiceCollectionExtensions.AddMediatRUsingRequestAbortedCancellationToken(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Collections.Generic.IEnumerable{System.Type},System.Action{MediatR.MediatRServiceConfiguration})">
-            <summary>
-            Registers MediatR which is configured to use the HttpContext.RequestAborted CancellationToken in ASP.NET Core Environments, and scans the assemblies of the provided types for handlers and requests
-            </summary>
-            <param name="mvcBuilder">>Mvc Builder</param>
-            <param name="handlerAssemblyMarkerTypes">Assembly handler marker types</param>
             <param name="configuration">The action used to optionally configure the MediatR options</param>
             <returns></returns>
         </member>

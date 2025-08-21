@@ -16,7 +16,7 @@ The extension is registered in an ASP.NET Core Application like this:
 ```csharp
 services
     .AddControllers()
-    .AddMediatRUsingRequestAbortedCancellationToken(config => config.AsScoped(), typeof(Startup).Assembly)
+    .AddMediatRUsingRequestAbortedCancellationToken(config => ...)
 ```
 
 **Important:** You will not have to register MediatR using _AddMediatR_ now anymore. So remove that call from ConfigureServices and move

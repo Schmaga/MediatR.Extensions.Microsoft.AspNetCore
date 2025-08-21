@@ -33,6 +33,14 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = new CancellationToken()) where TRequest : IRequest
+    {
+        await PossiblyWrapSendCallWithLinkedCancellationToken(
+            async token => await _mediator.Send(request, token).ConfigureAwait(false),
+            cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
         return await PossiblyWrapSendCallWithLinkedCancellationToken(
@@ -86,6 +94,20 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             return await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
         else
             return await wrappedSend(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task PossiblyWrapSendCallWithLinkedCancellationToken(Func<CancellationToken, Task> wrappedSend, CancellationToken cancellationToken)
+    {
+        if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
+        {
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
+            var token = cancellationTokenSource.Token;
+            await wrappedSend(token).ConfigureAwait(false);
+        }
+        else if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+            await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
+        else
+            await wrappedSend(cancellationToken).ConfigureAwait(false);
     }
 
     private async IAsyncEnumerable<TResponse> PossiblyWrapCreateStreamCallWithNewCancellationToken<TResponse>(

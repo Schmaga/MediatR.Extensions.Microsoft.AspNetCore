@@ -72,6 +72,50 @@ public class RequestAbortedCancellationTokenMediatorDecoratorTest
     }
 
     [Test]
+    public async Task Strongly_typed_Send_without_response_uses_requested_aborted_cancellation_token_if_it_is_available_and_no_explicit_token_was_passed()
+    {
+        var fakeRequest = Substitute.For<IRequest>();
+
+        await _subject.Send(fakeRequest);
+
+        await _mediator.Received(1).Send(fakeRequest, _httpContextStub.RequestAborted);
+    }
+
+    [Test]
+    [TestCase("cancelByRequestAbortedToken")]
+    [TestCase("cancelByPassedToken")]
+    public async Task Strongly_typed_Send_without_response_merges_passed_cancellation_token_with_request_aborted_token_if_both_are_set(string cancellationSource)
+    {
+        var fakeRequest = Substitute.For<IRequest>();
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+
+        await _subject.Send(fakeRequest, cancellationToken);
+
+        await _mediator.Received(1).Send(fakeRequest, Arg.Do<CancellationToken>(t =>
+        {
+            t.IsCancellationRequested.Should().BeFalse();
+            if (cancellationSource == "cancelByRequestAbortedToken")
+                _requestAbortedTokenSource.Cancel();
+            else if (cancellationSource == "cancelByPassedToken")
+                cancellationTokenSource.Cancel();
+            t.IsCancellationRequested.Should().BeTrue();
+        }));
+    }
+
+    [Test]
+    public async Task Strongly_typed_Send_without_response_falls_back_to_passed_cancellation_token_if_no_http_context_or_request_aborted_token_is_available()
+    {
+        var fakeRequest = Substitute.For<IRequest>();
+        var cancellationToken = new CancellationTokenSource().Token;
+        _httpContextAccessor.HttpContext.Returns((HttpContext?)null);
+
+        await _subject.Send(fakeRequest, cancellationToken);
+
+        await _mediator.Received(1).Send(fakeRequest, cancellationToken);
+    }
+
+    [Test]
     public async Task Object_typed_Send_uses_requested_aborted_cancellation_token_if_it_is_available_and_no_explicit_token_was_passed()
     {
         var fakeRequest = new object();

@@ -15,7 +15,7 @@ public class ServiceRegistrationTests
     {
         var services = new ServiceCollection();
         services.AddHttpContextAccessor();
-        services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(typeof(FakeRequest).Assembly);
+        services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(c => c.RegisterServicesFromAssemblyContaining<FakeRequest>());
         var provider = services.BuildServiceProvider();
 
         var mediator = provider.GetService<IMediator>();
@@ -29,8 +29,12 @@ public class ServiceRegistrationTests
         var services = new ServiceCollection();
         services.AddHttpContextAccessor();
         services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(
-            config => { config.Using<MyFakeMediator>().AsSingleton(); },
-            typeof(FakeRequest).Assembly);
+            config => 
+            { 
+                config.MediatorImplementationType = typeof(MyFakeMediator);
+                config.Lifetime = ServiceLifetime.Singleton;
+                config.RegisterServicesFromAssemblyContaining<FakeRequest>();
+            });
         var provider = services.BuildServiceProvider();
         var mediator = provider.GetService<IMediator>();
         var mediatorDecorator = provider.GetService<MyFakeMediator>();
@@ -46,20 +50,8 @@ public class ServiceRegistrationTests
     {
         var services = new ServiceCollection();
         services.AddHttpContextAccessor();
-        services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(typeof(FakeRequest));
-        var provider = services.BuildServiceProvider();
-
-        var mediator = provider.GetService<IMediator>();
-
-        mediator.Should().BeOfType<RequestAbortedCancellationTokenMediatorDecorator>();
-    }
-
-    [Test]
-    public void Test_type_handler_service_registration_extension_method_with_configuration()
-    {
-        var services = new ServiceCollection();
-        services.AddHttpContextAccessor();
-        services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(_ => { }, typeof(FakeRequest));
+        services.AddControllers().AddMediatRUsingRequestAbortedCancellationToken(
+            c => c.RegisterServicesFromAssemblyContaining<FakeRequest>());
         var provider = services.BuildServiceProvider();
 
         var mediator = provider.GetService<IMediator>();
@@ -76,8 +68,14 @@ public class MyFakeMediator : IMediator
 
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
+        throw new NotImplementedException();
+    }
+
+    public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = new()) where TRequest : IRequest
+    {
         ReceivedRequest = request;
-        return Task.FromResult((TResponse)new object());
+        return Task.CompletedTask;
+
     }
 
     public Task<object?> Send(object request, CancellationToken cancellationToken = default)
@@ -108,6 +106,4 @@ public class MyFakeMediator : IMediator
 }
 
 [ExcludeFromCodeCoverage]
-public class FakeRequest : IRequest
-{
-}
+public class FakeRequest : IRequest;
