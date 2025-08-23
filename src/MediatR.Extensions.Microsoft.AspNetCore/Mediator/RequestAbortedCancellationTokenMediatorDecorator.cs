@@ -24,7 +24,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
         _mediator = mediator;
     }
 
-#pragma warning disable 1591 // Disable xml comment warnings because documentation should be based on IMediator interface summaries
+    /// <inheritdoc />
     public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         return await PossiblyWrapSendCallWithLinkedCancellationToken(
@@ -33,7 +33,8 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
-    public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = new CancellationToken()) where TRequest : IRequest
+    /// <inheritdoc />
+    public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
     {
         await PossiblyWrapSendCallWithLinkedCancellationToken(
             async token => await _mediator.Send(request, token).ConfigureAwait(false),
@@ -41,6 +42,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
         return await PossiblyWrapSendCallWithLinkedCancellationToken(
@@ -49,6 +51,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request,
         CancellationToken cancellationToken = default)
     {
@@ -57,6 +60,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default)
     {
         return PossiblyWrapCreateStreamCallWithNewCancellationToken(
@@ -64,6 +68,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task Publish(object notification, CancellationToken cancellationToken = default)
     {
         await PossiblyWrapPublishCallWithNewCancellationToken(
@@ -72,6 +77,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
     {
         await PossiblyWrapPublishCallWithNewCancellationToken(
@@ -79,8 +85,6 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
-#pragma warning restore 1591
 
     private async Task<TResponse> PossiblyWrapSendCallWithLinkedCancellationToken<TResponse>(Func<CancellationToken, Task<TResponse>> wrappedSend, CancellationToken cancellationToken)
     {
