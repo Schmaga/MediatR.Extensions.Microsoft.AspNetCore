@@ -24,7 +24,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
         _mediator = mediator;
     }
 
-#pragma warning disable 1591 // Disable xml comment warnings because documentation should be based on IMediator interface summaries
+    /// <inheritdoc />
     public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         return await PossiblyWrapSendCallWithLinkedCancellationToken(
@@ -33,6 +33,16 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
+    {
+        await PossiblyWrapSendCallWithLinkedCancellationToken(
+            async token => await _mediator.Send(request, token).ConfigureAwait(false),
+            cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
     public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
         return await PossiblyWrapSendCallWithLinkedCancellationToken(
@@ -41,6 +51,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request,
         CancellationToken cancellationToken = default)
     {
@@ -49,6 +60,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default)
     {
         return PossiblyWrapCreateStreamCallWithNewCancellationToken(
@@ -56,6 +68,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task Publish(object notification, CancellationToken cancellationToken = default)
     {
         await PossiblyWrapPublishCallWithNewCancellationToken(
@@ -64,6 +77,7 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification
     {
         await PossiblyWrapPublishCallWithNewCancellationToken(
@@ -71,8 +85,6 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
-#pragma warning restore 1591
 
     private async Task<TResponse> PossiblyWrapSendCallWithLinkedCancellationToken<TResponse>(Func<CancellationToken, Task<TResponse>> wrappedSend, CancellationToken cancellationToken)
     {
@@ -86,6 +98,20 @@ public class RequestAbortedCancellationTokenMediatorDecorator : IMediator
             return await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
         else
             return await wrappedSend(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task PossiblyWrapSendCallWithLinkedCancellationToken(Func<CancellationToken, Task> wrappedSend, CancellationToken cancellationToken)
+    {
+        if (cancellationToken != default && _httpContextAccessor.HttpContext != null)
+        {
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _httpContextAccessor.HttpContext.RequestAborted);
+            var token = cancellationTokenSource.Token;
+            await wrappedSend(token).ConfigureAwait(false);
+        }
+        else if (cancellationToken == default && _httpContextAccessor.HttpContext != null)
+            await wrappedSend(_httpContextAccessor.HttpContext.RequestAborted).ConfigureAwait(false);
+        else
+            await wrappedSend(cancellationToken).ConfigureAwait(false);
     }
 
     private async IAsyncEnumerable<TResponse> PossiblyWrapCreateStreamCallWithNewCancellationToken<TResponse>(
